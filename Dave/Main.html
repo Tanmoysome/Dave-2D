@@ -1,0 +1,1232 @@
+<html>
+    <canvas width="500" height="400" id="myCanvas"> </canvas>
+<script src="DaveTile.js"></script>
+    <script src = "daveChar.js"></script>
+    <script src="Monster.js"></script>
+    <script src="Bullet.js"></script>
+<script>
+    var g_canvas            = document.getElementById("myCanvas");
+    var g_context           = g_canvas.getContext("2d");
+    var g_FPS               = 30;
+    var g_TimeInterval      = 1000/g_FPS;
+    var g_score             = 0;
+    var g_frames            = 0;
+    var g_time              = 0;
+    var g_cols              = 50;
+    var g_rows              = 10;
+    var g_mapSpeed          = 0;
+    var g_speed             = 3;
+    var g_CollidedTileType  = 0;
+    var g_CollidedTile      = 0;
+    var g_count             = 0;
+    var g_shoot             = false;
+    var g_bulletLeft        = false;
+    var g_bulletRight       = false;
+    var g_moveleft          = false;
+    var g_moveright         = false;
+    var g_MoveUp            = false;
+    var g_ReadyTOJump       = false;
+    var g_movemap           = true;
+    var g_moveLevelLeft     = false;
+    var g_moveLevelRight    = false;
+    var g_mapArray          = new Array(g_rows*g_cols);
+    var g_blocksize         = 35;
+    var g_rightmapboundaryReached = false;
+    var g_leftmapboundaryReached  = false;
+    var g_hasGun            = false;
+    var g_hasKey            = false;
+    var g_GameUI            = true;
+    var g_playgame          = false;
+    var g_home              = true;
+    var g_Inst              = false;
+    var g_ReturnHome        = false;
+    var g_mouseX            = 0;
+    var g_mouseY            = 0;
+    var g_MainMenu          = new C_MainMenu();
+    var g_bitmapArray       = 
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,"r",0,0,0,0,0,"b",0,0,0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,6,1,1,
+     1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+     1,5,0,0,5,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,1,8,9,8,0,0,8,9,0,3,8,0,0,
+     1,0,0,0,0,0,0,0,5,5,5,0,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,1,1,1,1,1,1,1,0,0,1,3,0,3,0,9,0,0,0,8,0,7,0,
+     1,0,5,5,0,0,0,0,0,1,0,0,0,"t",1,0,5,5,5,5,5,0,1,0,0,1,1,0,4,1,0,0,0,0,1,0,0,1,9,9,9,0,8,0,0,0,7,3,0,0,
+     1,0,0,0,0,0,0,0,0,1,0,5,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,1,0,0,1,0,1,0,1,1,7,0,0,0,7,0,0,0,8,0,3,0,
+     1,0,0,0,5,5,5,0,"r",1,0,0,0,"g",1,0,"b","b","b","b","b",0,1,0,1,0,1,1,0,1,0,1,1,0,0,0,0,1,8,0,0,0,0,3,7,0,7,0,9,0,
+     1,0,0,0,0,0,0,0,0,1,"b",0,0,5,1,0,0,0,0,0,0,0,1,0,0,0,1,4,0,0,0,0,1,0,0,1,4,1,0,0,0,0,0,0,0,0,0,0,0,0,
+     1,1,1,2.1,2.1,2.1,2.1,2.1,2.1,1,2.1,2.1,2.1,2.1,1,"w1","w2","w1","w2","w3","w4","w1",1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2]
+                               
+    
+    var g_RedtileImg        = new Image();
+    g_RedtileImg.src        = "daveartPNG/redTile.png";
+    
+    var g_Bluetile1          = new Image();
+    g_Bluetile1.src          = "daveartPNG/water1.png";
+    
+    var g_fire1             = new Image();
+    g_fire1.src             = "daveartPNG/fire1.png"
+    
+    var g_fire2             = new Image();
+    g_fire2.src             = "daveartPNG/fire2.png";
+    
+    var g_fire3             = new Image();
+    g_fire3.src             = "daveartPNG/fire3.png";
+    
+    var g_fire4             = new Image();
+    g_fire4.src             = "daveartPNG/fire4.png";
+    
+    var g_redDiamond        = new Image();
+    g_redDiamond.src        = "daveartPNG/redDiamonds.png";
+    
+    var g_blueDiamond       = new Image();
+    g_blueDiamond.src       ="daveartPNG/diamonds.png";
+    
+    var g_purpleGem         = new Image();
+    g_purpleGem.src         = "daveartPNG/sphere.png";
+    
+    var g_purpleBlock       = new Image();
+    g_purpleBlock.src       = "daveartPNG/platformTile.png";
+    
+    var g_trophy            = new Image();
+    g_trophy.src            = "daveartPNG/cup1.png";
+    
+    var g_door              = new Image();
+    g_door.src              = "daveartPNG/door.png"
+    
+    var g_weed1             = new Image();
+    g_weed1.src             = "daveartPNG/weed1.png";
+    
+    var g_weed2             = new Image();
+    g_weed2.src             = "daveartPNG/weed2.png";
+    
+    var g_weed3             = new Image();
+    g_weed3.src             = "daveartPNG/weed3.png";
+    
+    var g_weed4             = new Image();
+    g_weed4.src             = "daveartPNG/weed4.png";
+    
+    var g_water1            = new Image();
+    g_water1.src            = "daveartPNG/water1.png";
+    
+    var g_water2            = new Image();
+    g_water2.src            = "daveartPNG/water2.png";
+    
+    var g_water3            = new Image();
+    g_water3.src            = "daveartPNG/water3.png";
+    
+    var g_water4            = new Image();
+    g_water4.src            = "daveartPNG/water4.png";
+    
+    var g_DaveIMG           = new Image();
+    g_DaveIMG.src           = "daveartPNG/dave1.png";
+    
+    var g_Dave1IMG          = new Image();
+    g_Dave1IMG.src          = "daveartPNG/dave3.png"
+    
+    var g_DavelIMG          = new Image();
+    g_DavelIMG.src          = "daveartPNG/dave5.png";
+    
+    var g_Davel1IMG         = new Image();
+    g_Davel1IMG.src         = "daveartPNG/dave6.png";
+    
+    
+    var g_Explosion1        = new Image();
+    g_Explosion1.src        = "daveartPNG/explosion1.png";
+    
+    var g_Explosion2        = new Image();
+    g_Explosion2.src        = "daveartPNG/explosion2.png";
+    
+    var g_Monster1          = new Image();
+    g_Monster1.src          = "daveartPNG/monster.png";
+    
+    var g_bullet            = new Image();
+    g_bullet.src            = "daveartPNG/monsterBullet.png";
+    
+    var g_Gun               = new Image();
+    g_Gun.src               = "daveartPNG/gun.png";
+    
+    var g_Lives             = new Image();
+    g_Lives.src             = "daveartPNG/lives.png";
+    
+    var g_display           = new Image();
+    g_display.src           = "daveartPNG/levelanddaves.png";
+    
+    var g_FireImageArray    = [g_fire1,g_fire2,g_fire3,g_fire4];
+    var g_WaterImageArray   = [g_water1,g_water2,g_water3,g_water4];
+    var g_WeedImageArray    = [g_weed1,g_weed2,g_weed3,g_weed4];
+    var g_DaveRightArray    = [g_DaveIMG,g_Dave1IMG];
+    var g_DaveLeftArray     = [g_DavelIMG,g_Davel1IMG];
+    var g_ExplosionArray    = [g_Explosion1,g_Explosion2];
+    var g_NumberImages      = new Array(10);
+    
+    function f_InitNumberImages()
+    {
+        for(var i=0; i<g_NumberImages.length; i++)
+        {
+            g_NumberImages[i] = new Image();
+            g_NumberImages[i].src = 'daveartPNG/'+i+'.png';
+        }
+    }
+    
+    function f_clearcanvas()
+    {
+        g_context.clearRect(0,0,g_canvas.width,g_canvas.height)
+        g_context.fillStyle = "Black";
+        g_context.fillRect(0,0,g_canvas.width,g_canvas.height);
+
+    }
+    
+    function f_initmap()
+    {
+        var l_x = 0;
+        var l_y = 20;
+        var l_type = 0;
+        var l_cols = 0;
+        var l_image = 0;
+        var l_index = 0;
+        
+        
+        for(var i=0; i<g_rows*g_cols; i++)
+        {
+            l_cols++;
+            l_type = g_bitmapArray[i];
+            
+            if(l_type == 0)
+            {
+                l_image = null;
+            }
+            
+            if(l_type == 1)
+            {
+                l_image = g_RedtileImg;
+            }
+            
+            if(l_type == 2)
+            {
+                l_image = g_fire2;
+            }
+            
+            if(l_type == 2.1)
+            {
+                l_image = g_fire1;
+            }
+            
+            if(l_type == 3)
+            {
+                l_image = g_weed4;
+            }
+            
+            if(l_type == 4)
+            {
+                g_blocksize = 30;
+                l_image = g_purpleGem;
+            }
+            
+            if(l_type == 5)
+            {
+                l_image = g_purpleBlock;
+            }
+            
+            if(l_type == 6)
+            {
+                l_image = g_door;
+            }
+            
+            if(l_type == 7)
+            {
+                l_image = g_weed1;
+            }
+            
+            if(l_type == 8)
+            {
+                l_image = g_weed2;
+            }
+            
+            if(l_type == 9)
+            {
+                l_image = g_weed3;
+            }
+            
+            if(l_type == "g")
+            {
+                l_image = g_Gun;
+            }
+            
+            if(l_type == "t")
+            {
+                l_image = g_trophy;
+            }
+            
+            if(l_type == "b")
+            {
+                g_blocksize = 27;
+                l_image = g_blueDiamond;
+            }
+            
+            if(l_type == "r")
+            {
+                l_image = g_redDiamond;
+                g_blocksize = 30;
+            }
+            
+            if(l_type == "w1")
+            { 
+                l_image = g_water1;
+            }
+            
+            if(l_type == "w2")
+            {
+                l_image = g_water2;
+            }
+            
+            if(l_type == "w3")
+            {
+                l_image = g_water3;
+            }
+            
+            if(l_type == "w4")
+            {
+                l_image = g_water4;
+            }
+            
+            if(l_image != null)
+            {
+                g_mapArray[l_index] = new C_tile(l_x,l_y,l_image,g_blocksize,l_type);
+                g_blocksize = 35;
+                l_x += g_blocksize;
+                l_index++;
+            }
+            
+            else{
+                l_x += g_blocksize;
+            }
+            
+            
+            if(l_cols == g_cols)
+            {
+                l_cols = 0;
+                l_y += g_blocksize;
+                l_x = 0;
+            }
+        }
+    }
+    
+    function f_drawmap()
+    {
+        for(var i=0;i<g_mapArray.length-1;i++)
+        {
+            if(g_mapArray[i])
+            {g_mapArray[i].m_drawImage(g_context);}
+        }
+    }
+    
+    function f_movemap()
+    {
+        if(!g_Dave.isAlive) {return;}
+        
+           if(g_movemap)
+            {
+                if(g_moveLevelLeft)
+                {
+                    g_mapSpeed = -g_speed;      
+                }
+
+                if(g_moveLevelRight)
+                {
+                    g_mapSpeed = g_speed;
+                }
+
+                g_Monster.xpos += g_mapSpeed;
+                g_Monster.PathX += g_mapSpeed;
+
+                for(var i=0; i<g_mapArray.length-1;i++)
+                {
+                    if(g_mapArray[i])
+                    {g_mapArray[i].xpos += g_mapSpeed;}
+                }
+                g_mapSpeed = 0;
+                g_moveLevelLeft = false;
+                g_moveLevelRight = false;
+            } 
+        
+    }
+    
+    function f_mapcollision()
+    {
+        
+        
+           if(g_Dave.xpos>= g_canvas.width-200)
+            {
+                if(!g_Dave.isAlive) {return;}
+                if(g_Dave.moveRight)
+                { 
+                    g_moveLevelLeft = true;
+
+                    if(g_mapArray[g_cols-1].xpos <= g_canvas.width)
+                    {
+                       g_rightmapboundaryReached = true;
+                    }
+
+                    if(!g_rightmapboundaryReached)
+                    {
+                        g_Dave.xpos = g_canvas.width-200;
+                    }
+                }
+            }
+
+            if(g_Dave.xpos <= 100)
+            {
+                if(!g_Dave.isAlive) {return;}
+                if(g_Dave.moveLeft)
+                {
+                    g_moveLevelRight = true;
+
+                    if(g_mapArray[0].xpos >= 0)
+                    {
+                        g_leftmapboundaryReached = true;
+                    }
+
+                    if(!g_leftmapboundaryReached)
+                    {
+                        g_Dave.xpos = 100;
+                    }
+                }
+            }
+
+            if(g_mapArray[0].xpos >= 0)
+            {
+                g_moveLevelRight = false;
+            }
+
+            if(g_mapArray[g_cols-1].xpos <= g_canvas.width)
+            {
+                g_moveLevelLeft = false;
+            } 
+        
+    }
+    
+    function f_animate()
+    {
+        g_frames++;
+        if(g_frames%2 == 0)
+        {
+            if(!g_Dave.isAlive)
+            {return;}
+            
+            if(g_Dave.moveLeft)
+            {
+                g_Dave.image = g_DaveLeftArray[parseInt(Math.random()*g_DaveLeftArray.length)];
+            }
+            if(g_Dave.moveRight)
+            {
+                g_Dave.image = g_DaveRightArray[parseInt(Math.random()*g_DaveRightArray.length)];
+            }
+        }
+        
+        if(g_frames%5 == 0)
+        {
+            for(var i=0; i<g_mapArray.length;i++)
+            {
+                if(g_mapArray[i])
+                {
+                    if(g_mapArray[i].type == 2.1)
+                    {
+                        g_mapArray[i].image = g_FireImageArray[parseInt(Math.random()*g_FireImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == 2)
+                    {
+                        g_mapArray[i].image = g_FireImageArray[parseInt(Math.random()*g_FireImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == 3)
+                    {
+                         g_mapArray[i].image = g_WeedImageArray[parseInt(Math.random()*g_WeedImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == 7)
+                    {
+                         g_mapArray[i].image = g_WeedImageArray[parseInt(Math.random()*g_WeedImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == 8)
+                    {
+                         g_mapArray[i].image = g_WeedImageArray[parseInt(Math.random()*g_WeedImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == 9)
+                    {
+                         g_mapArray[i].image = g_WeedImageArray[parseInt(Math.random()*g_WeedImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == "w1")
+                    {
+                        g_mapArray[i].image = g_WaterImageArray[parseInt(Math.random()*g_WaterImageArray.length)];
+                    }
+                     
+                   if(g_mapArray[i].type == "w2")
+                    {
+                        g_mapArray[i].image = g_WaterImageArray[parseInt(Math.random()*g_WaterImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == "w3")
+                    {
+                        g_mapArray[i].image = g_WaterImageArray[parseInt(Math.random()*g_WaterImageArray.length)];
+                    }
+                    
+                    if(g_mapArray[i].type == "w4")
+                    {
+                        g_mapArray[i].image = g_WaterImageArray[parseInt(Math.random()*g_WaterImageArray.length)];
+                    }
+                }
+            }
+        }
+    }
+    
+    function f_DaveJump()
+    {
+        if(!g_Dave.isAlive){return;}
+        
+            if(g_MoveUp && g_ReadyTOJump)
+            {
+                g_Dave.inAir = true;
+                g_Dave.velocity = -15;
+            }
+
+            if(g_Dave.inAir)
+            {
+                g_ReadyTOJump = false;
+                f_DaveToBlockCollision("u");
+            }
+    }
+    
+    function f_DaveToBlockCollision(l_d)
+    {
+        //if(!g_Dave.isAlive) { console.log("No collision"); return;}
+        //console.log("collision");
+        
+        for(var i=0; i<g_mapArray.length; i++)
+        {
+            if(!g_Dave.isAlive) { console.log("No collision"); return;}
+            
+            if(g_mapArray[i] && g_mapArray[i].Alive)
+            {
+                
+                
+                if(l_d == "d")
+                {
+                    if((g_Dave.xpos < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos > g_mapArray[i].xpos) && (g_Dave.ypos + g_Dave.h > g_mapArray[i].ypos) && (g_Dave.ypos + g_Dave.h < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_Dave.ypos = g_mapArray[i].ypos-g_Dave.h;
+                        g_Dave.velocity = 0;
+                        g_Dave.inAir = false;
+                        g_ReadyTOJump = true;
+                        console.log("bottom hit");
+                        //console.log(g_score);
+                        g_CollidedTile = i;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        
+                        if(g_CollidedTileType == 2.1 || g_CollidedTileType == "w1" || g_CollidedTileType == "w2" || g_CollidedTileType == "w3" || g_CollidedTileType == "w4")
+                        {
+                            g_Dave.isAlive = false;
+                            g_Dave.life--;
+                            
+                        }
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                            
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "t")
+                        {
+                            g_hasKey = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+ 
+                        return;
+                    }
+                    
+                    
+                    else if((g_Dave.xpos + g_Dave.w < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos + g_Dave.w > g_mapArray[i].xpos) && (g_Dave.ypos + g_Dave.h > g_mapArray[i].ypos) && (g_Dave.ypos + g_Dave.h < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_Dave.ypos = g_mapArray[i].ypos-g_Dave.h;
+                        g_Dave.velocity = 0;
+                        g_Dave.inAir = false;
+                        g_ReadyTOJump = true;
+                        console.log("bottom hit 1");
+                        g_CollidedTile = i;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        
+                        if(g_CollidedTileType == 2.1 || g_CollidedTileType == "w1" || g_CollidedTileType == "w2" || g_CollidedTileType == "w3" || g_CollidedTileType == "w4")
+                        {
+                            g_Dave.isAlive = false;
+                            g_Dave.life--;
+                        }
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "t")
+                        {
+                            g_hasKey = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        return;
+                    }
+                }
+                
+                if(l_d == "u")
+                {
+                    if((g_Dave.xpos < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos > g_mapArray[i].xpos) && (g_Dave.ypos > g_mapArray[i].ypos) && (g_Dave.ypos < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_Dave.velocity = -g_Dave.velocity;
+                        g_Dave.ypos = g_mapArray[i].ypos + g_mapArray[i].size;
+                        g_CollidedTileType = g_mapArray[i].type;
+
+                        //console.log("Top Collision");
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            console.log("t1");
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                            
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        return;
+                        
+                    }
+                    else if((g_Dave.xpos + g_Dave.w < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos + g_Dave.w > g_mapArray[i].xpos) && (g_Dave.ypos > g_mapArray[i].ypos) && (g_Dave.ypos < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_Dave.velocity = -g_Dave.velocity;
+                        g_Dave.ypos = g_mapArray[i].ypos + g_mapArray[i].size;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        //console.log("Top Collision 1");
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            
+                            console.log("t1");
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                            
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        return;
+                        
+                    }
+                }
+                
+                if(l_d == "l")
+                {
+                    if((g_Dave.xpos < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos > g_mapArray[i].xpos) && (g_Dave.ypos > g_mapArray[i].ypos) && (g_Dave.ypos < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_Dave.xpos = g_mapArray[i].xpos + g_mapArray[i].size;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        //console.log("Left Collision");
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        return;
+                    }
+                    
+                    else if((g_Dave.xpos < g_mapArray[i].xpos + g_mapArray[i].size) && (g_Dave.xpos > g_mapArray[i].xpos) && (g_Dave.ypos + g_Dave.h > g_mapArray[i].ypos) && (g_Dave.ypos + g_Dave.h < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        g_Dave.xpos = g_mapArray[i].xpos + g_mapArray[i].size;
+                        //console.log("Left Collision 1");
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        return;
+                    }
+                }
+                
+                if(l_d == "r")
+                {
+                    if((g_Dave.xpos + g_Dave.w > g_mapArray[i].xpos) &&        (g_Dave.xpos + g_Dave.w < g_mapArray[i].xpos +           g_mapArray[i].size) && (g_Dave.ypos >                   g_mapArray[i].ypos) && (g_Dave.ypos <                   g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        g_Dave.xpos = g_mapArray[i].xpos - g_mapArray[i].size;
+                        //console.log("Right Collision");
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "t")
+                        {
+                            g_hasKey = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 6)
+                        {
+                            if(g_hasKey)
+                            {
+                                g_Dave.hasKey = true;
+                            }
+                        }
+                        return;
+                    }
+                    
+                    else if((g_Dave.xpos + g_Dave.w > g_mapArray[i].xpos) && (g_Dave.xpos + g_Dave.w < g_mapArray[i].xpos +           g_mapArray[i].size) && (g_Dave.ypos + g_Dave.h > g_mapArray[i].ypos) && (g_Dave.ypos + g_Dave.h < g_mapArray[i].ypos + g_mapArray[i].size))
+                    {
+                        g_CollidedTile = i;
+                        g_CollidedTileType = g_mapArray[i].type;
+                        g_Dave.xpos = g_mapArray[i].xpos - g_mapArray[i].size;
+                        //console.log("Right Collision 1");
+                        
+                        if(g_CollidedTileType == "r")
+                        {
+                            g_score += 2;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "b")
+                        {
+                            g_score += 3;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 4)
+                        {
+                            g_score += 1;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "g")
+                        {
+                            g_hasGun = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == "t")
+                        {
+                            g_hasKey = true;
+                            g_mapArray[g_CollidedTile].Alive = false;
+                        }
+                        
+                        if(g_CollidedTileType == 6)
+                        {
+                            if(g_hasKey)
+                            {
+                                g_Dave.hasKey = true;
+                            }
+                        }
+                        
+                        return;
+                    }
+                }
+            }   
+        }
+    }
+    
+    function f_DavetoMonsterCollision()
+    {
+        if(!g_Dave.isAlive) {return;}
+        
+        if(g_Dave.xpos + g_Dave.w > g_Monster.xpos && g_Dave.xpos <= g_Monster.xpos + g_Monster.size)
+        {
+            if(g_Dave.ypos < g_Monster.ypos + g_Monster.size && g_Dave.ypos + g_Dave.h > g_Monster.ypos)
+            {
+                g_Dave.isAlive = false;
+                g_Dave.life--;
+            }
+        }
+    }
+    
+    function f_DaveShoot()
+    {
+        if(g_hasGun)
+        {
+            if(g_shoot && !g_DaveBullet.Alive)
+            {
+                g_DaveBullet.Alive = true;
+                g_DaveBullet.xpos = g_Dave.xpos
+                g_DaveBullet.ypos = g_Dave.ypos;
+                
+                if(g_bulletLeft)
+                {
+                    g_DaveBullet.speed = 4;
+                }
+                
+                if(g_bulletRight)
+                {
+                    g_DaveBullet.speed = 4;
+                }
+            }
+        }   
+    }
+    
+    function f_DaveBulletToMonsterCollision()
+    {
+        if(g_DaveBullet.xpos + g_DaveBullet.size > g_Monster.xpos && g_DaveBullet.xpos + g_DaveBullet.size < g_Monster.xpos + g_Monster.size)
+        {
+            if(g_DaveBullet.ypos >g_Monster.ypos && g_DaveBullet.ypos < g_Monster.ypos + g_Monster.size)
+            {
+                g_Monster.alive = false;
+                g_DaveBullet.Alive = false;
+            }
+        }
+    }
+    
+    function f_Respawn()
+    {
+        if(g_Dave.life > 0)
+        {
+            if(!g_Dave.isAlive)
+            {
+                if(g_Dave.time == 2)
+                {
+                   for(var i=0; i<g_mapArray.length-1;i++)
+                    {
+                        if(g_mapArray[i])
+                        {g_mapArray[i].xpos += 5;}
+                    } 
+                    
+                    g_Monster.xpos += 5;
+                    g_Monster.PathX += 5;
+
+                    
+                
+                
+                if(g_mapArray[0].xpos >= 0)
+                    {
+                        g_leftmapboundaryReached = true;
+                    }
+
+                    if(g_leftmapboundaryReached)
+                    {
+                        
+                        g_Dave.isAlive = true;
+                        g_Dave.xpos = g_mapArray[3].xpos;
+                        g_Dave.ypos = g_mapArray[2].ypos+40;
+                        g_Dave.time = 0;
+                        
+                    }  
+                }
+            }
+        }
+        else if(g_Dave.life == 0)
+            {
+                console.log("Game Over");
+            }
+    }
+    
+    function f_displayLives()
+    {
+        var l_x = 133;
+        var l_y = 375;
+        
+        g_context.drawImage(g_display,1,375,130,25)
+        
+        for(var i=0; i<g_Dave.life; i++)
+        {
+            g_context.drawImage(g_Lives,l_x,l_y,25,23)
+            l_x += 28;
+        }
+    }
+    
+    function f_GameComplete()
+    {
+        if(g_Dave.hasKey)
+        {
+            console.log("Game Over for real");
+            g_context.fillStyle = "Black";
+            g_context.fillRect(0,0,g_canvas.width,g_canvas.height);
+            g_context.fillStyle ="green";
+            g_context.font = "30px Arial";
+            g_context.fillText("GAME OVER",150,200)
+            //g_MainMenu.Home.m_drawButton(g_context);
+            /*g_GameUI = true;
+            g_playgame = false;
+            g_ReturnHome = true;*/
+            
+        }
+    }
+    
+    function C_Button(l_x,l_y,l_w,l_h,l_type)
+    {
+        this.x = l_x;
+        this.y = l_y;
+        this.w = l_w;
+        this.h = l_h;
+        this.type = l_type;
+        this.clicked = false;
+        
+        this.m_drawButton = function m_drawButton(l_ctx)
+        {
+            l_ctx.font = "15px Times New Roman"
+            l_ctx.fillStyle = "#7FFF00"
+            l_ctx.fillRect(this.x,this.y,this.w,this.h)
+            l_ctx.fillStyle ="black"
+            if(this.type == "START")
+            {l_ctx.fillText(this.type,this.x+this.w/3+5,this.y+this.h/2+5)}
+            if(this.type == "INSTRUCTION")
+            {l_ctx.fillText(this.type,this.x+this.w/4,this.y+this.h/2+5)}
+            if(this.type == "BACK")
+            {l_ctx.fillText(this.type,this.x+this.w/4-6,this.y+this.h/2+4)}
+            if(this.type == "HOME")
+            {l_ctx.fillText(this.type,this.x+this.w/4-6,this.y+this.h/2+4)}
+        }
+    }
+    
+    function C_MainMenu()
+    {
+        this.start = new C_Button(150,300,200,30,"START");
+        this.instruction = new C_Button(150,350,200,30,"INSTRUCTION");
+        this.Restart     = new C_Button(300,10,100,20,"RESTART");
+        this.Back        = new C_Button(10,300,100,50,"BACK")
+        this.Home        = new C_Button(200,300,100,20,"HOME")
+        this.isMainMenuScreen = true;
+        
+        this.m_drawMainMenu = function m_drawMainMenu(l_ctx)
+        {
+            if(this.isMainMenuScreen)
+            {
+                l_ctx.fillStyle = "#DC143C"
+                l_ctx.font = "50px Arial"
+                l_ctx.fillText("Main Menu",130,200)
+            }
+        }
+    }
+    
+    function f_draw()
+    {
+        if(g_home)
+        {
+            g_context.fillStyle = "Black";
+            g_context.fillRect(0,0,g_canvas.width,g_canvas.height);
+            g_context.fillStyle = "#0000CD"
+            g_context.font = "70px Arial"
+            g_context.fillText("Classic Dave",50,100);
+            g_MainMenu.m_drawMainMenu(g_context);
+            g_MainMenu.start.m_drawButton(g_context);
+            g_MainMenu.instruction.m_drawButton(g_context)
+            
+        }
+        
+        if(g_Inst)
+        {
+            g_context.fillStyle = "Black";
+            g_context.fillRect(0,0,g_canvas.width,g_canvas.height);
+            
+            f_drawInstructions(g_context);
+        }
+        
+        /*if(g_ReturnHome)
+        {
+            g_context.fillStyle = "Black";
+            g_context.fillRect(0,0,g_canvas.width,g_canvas.height);
+            g_context.fillStyle ="green";
+            g_context.font = "30px Arial";
+            g_context.fillText("GAME OVER",150,200)
+            g_MainMenu.Home.m_drawButton(g_context);
+        }*/
+        
+    }
+    
+    function f_drawInstructions(l_ctx)
+    {
+        
+        l_ctx.fillStyle = "white"
+        l_ctx.font = '20px Arial'
+        l_ctx.fillText("1) It is a 2 Player game ",20,110)
+        l_ctx.fillText("2) Use arrow keys for movement of snake 1 ",20,130)
+        l_ctx.fillText("3) Use WASD keys for movement of snake 2 ",20,150)
+        l_ctx.fillText("4) Yellow powerup Increases length by 5",20,170)
+        l_ctx.fillText("5) Orange powerup Increases speed by 5 ",20,190)
+        l_ctx.fillText("6) Red powerup decreases length to 2 ",20,210)
+        l_ctx.fillText("7) Violet powerup decreases speed to 2 ",20,230)
+        g_MainMenu.Back.m_drawButton(g_context);
+    }
+    
+    function f_keyDown(e)
+    {
+        if(e.keyCode == 37)
+        {
+            g_Dave.moveLeft = true;
+            g_bulletLeft = true;
+            g_bulletRight = false;
+        }
+        
+        if(e.keyCode == 39)
+        {
+            g_Dave.moveRight = true;
+            g_bulletRight = true;
+            g_bulletLeft = false;
+        }
+        
+        if(e.keyCode == 38)
+        {
+            g_MoveUp = true;
+            
+        }
+        
+        if(e.keyCode == 32)
+        {
+            g_shoot = true;
+        }
+    }
+    
+    function f_keyup(e)
+    {
+        if(e.keyCode == 37)
+        {
+            g_Dave.moveLeft = false;
+        }
+        
+        if(e.keyCode == 39)
+        {
+            g_Dave.moveRight = false;
+        }
+        
+        if(e.keyCode == 38)
+        {
+            g_MoveUp = false;
+        }
+        
+        if(e.keyCode == 32)
+        {
+            g_shoot = false;
+        }
+    }
+    
+    function f_mouseclick(e)
+    {
+        g_mouseX = e.clientX;
+        g_mouseY = e.clientY;
+    }
+    
+    function f_MainMenuUI()
+    {
+        if(g_mouseX > g_MainMenu.start.x && g_mouseX < g_MainMenu.start.x+g_MainMenu.start.w)
+        {
+            if(g_mouseY > g_MainMenu.start.y && g_mouseY < g_MainMenu.start.y+g_MainMenu.start.h)
+            {   
+                f_initmap();
+                g_Dave.isAlive = true;
+                g_GameUI = false;
+                g_playgame = true;
+                g_home = false;
+            }
+        }
+        
+        if(g_mouseX > g_MainMenu.instruction.x && g_mouseX < g_MainMenu.instruction.x+g_MainMenu.instruction.w)
+        {
+            if(g_mouseY > g_MainMenu.instruction.y && g_mouseY < g_MainMenu.instruction.y+g_MainMenu.instruction.h)
+            {   
+                g_Inst = true;
+                g_home = false;
+            }
+        }
+        
+        if(g_mouseX > g_MainMenu.Back.x && g_mouseX < g_MainMenu.Back.x+g_MainMenu.Back.w)
+        {
+            if(g_mouseY > g_MainMenu.Back.y && g_mouseY < g_MainMenu.Back.y+g_MainMenu.Back.h)
+            {
+                g_Inst = false;
+                g_home = true;
+            }
+        }
+        
+        /*if(g_mouseX > g_MainMenu.Home.x && g_mouseX < g_MainMenu.Home.x+g_MainMenu.Home.w)
+        {
+            if(g_mouseY > g_MainMenu.Home.y && g_mouseY < g_MainMenu.Home.y+g_MainMenu.Home.h)
+            {
+                console.log("clicked");
+                g_GameUI = true;
+                g_playgame = false;
+                g_ReturnHome = false;
+                g_home = true;
+            }
+        }*/    
+    }
+    
+    
+    f_initmap();
+    var g_Dave          = new C_Dave(g_mapArray[3].xpos,g_mapArray[2].ypos+40,30,25,g_DaveIMG)
+    
+    var g_Monster       = new C_Monster(g_mapArray[127].xpos-20,g_mapArray[127].ypos-40,35,g_Monster1)
+    
+    var g_DaveBullet    = new C_Bullet(12,g_bullet)
+    
+    function Gameloop()
+    {
+        if(g_GameUI)
+        {
+            console.log("Reached")
+            
+            f_draw();
+            f_MainMenuUI();
+        }
+        if(g_playgame)
+        {
+            console.log(g_Dave.time);
+            f_GameComplete();
+            f_animate();
+            g_Monster.m_MoveMonster();
+            g_Dave.m_moveDaveLeft();
+            f_DaveToBlockCollision("l");
+            g_Dave.m_moveDaveRight();
+            f_DaveToBlockCollision("r");
+            g_Dave.m_Gravity();
+            f_DaveToBlockCollision("d");
+            f_DaveJump();
+            g_DaveBullet.m_moveBullet();
+            f_DaveShoot();
+            f_DavetoMonsterCollision();
+            f_DaveBulletToMonsterCollision();
+            f_mapcollision();
+            f_movemap();
+            f_Respawn();
+            f_clearcanvas();
+            f_drawmap();
+            g_Dave.m_drawDave(g_context);
+            g_DaveBullet.m_drawBullet(g_context);
+            g_Monster.m_drawMonster(g_context);
+            f_displayLives();
+            f_GameComplete();
+        }
+        
+    }
+    
+    setInterval(Gameloop,g_TimeInterval);
+    
+    document.addEventListener("keydown",f_keyDown);
+    document.addEventListener("keyup",f_keyup);
+    document.addEventListener("mousedown",f_mouseclick);
+    
+    </script></html>
